@@ -128,7 +128,7 @@ def handle_pack_file(name):
         key.set_contents_from_string('\n'.join(content), policy='public-read')
 
 
-@app.route('/pingpackage')
+@app.route('/pingPackage')
 def ping_package():
     link = request.args.get('link', '') # ex: http://noteric.rsshub.org/
     name = name_from_link(link)
