@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import json
 import urlparse
 from cStringIO import StringIO
@@ -9,14 +10,15 @@ from collections import defaultdict
 import boto
 import arrow
 import requests
-from redis import StrictRedis
+import redis as redis_pkg
 from flask import Flask, request
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key
 
 
 app = Flask(__name__)
-redis = StrictRedis()
+redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
+redis = redis_pkg.from_url(redis_url)
 
 s3_conn = boto.connect_s3()
 s3_bucket = s3_conn.lookup('blogs.rsshub.org')
