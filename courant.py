@@ -47,7 +47,7 @@ def build_jsonp(obj, func='getData'):
 
     :param dict obj: Dict to be serialized
     :param str func: Name of the callback function (default 'getData')
-    :returns: JSONP version of object padded with func
+    :return: JSONP version of object padded with func
     :rtype: str
     """
     buf = StringIO()
@@ -133,6 +133,9 @@ def handle_pack_file(name):
 
 @app.route('/pingPackage')
 def ping_package():
+    """
+    Upload pack file to S3 and update named outline metadata.
+    """
     link = request.args.get('link', '') # ex: http://noteric.rsshub.org/
     name = name_from_link(link)
     handle_pack_file(name)
