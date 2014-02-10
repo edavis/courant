@@ -31,9 +31,6 @@ def build_timestamp():
     """
     Return current UTC as a string.
 
-    :return: Current UTC timestamp
-    :rtype: str
-
     >>> build_timestamp()
     'Sun Feb 09 2014 22:57:01 -0000'
     """
@@ -80,8 +77,8 @@ def name_from_link(link):
     :return: Outline base name
     :rtype: str
 
-    >>> name_from_link('http://noteric.rsshub.org/')
-    'noteric'
+    >>> name_from_link('http://eric.rsshub.org/')
+    'eric'
     """
     netloc = urlparse.urlparse(link).netloc
     (name, domain) = netloc.split('.', 1)
@@ -136,7 +133,7 @@ def ping_package():
     """
     Upload pack file to S3 and update named outline metadata.
     """
-    link = request.args.get('link', '') # ex: http://noteric.rsshub.org/
+    link = request.args.get('link', '') # ex: http://eric.rsshub.org/
     name = name_from_link(link)
     handle_pack_file(name)
     obj = {
