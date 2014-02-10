@@ -29,7 +29,10 @@ PACK_MAGIC_PATTERN = '<[{~#--- '
 
 def build_timestamp():
     """
-    Return UTC now in a readable format.
+    Return current UTC as a string.
+
+    :return: Current UTC timestamp
+    :rtype: str
 
     >>> build_timestamp()
     'Sun Feb 09 2014 22:57:01 -0000'
@@ -40,7 +43,7 @@ def build_timestamp():
 
 def build_jsonp(obj, func='getData'):
     """
-    Return a JSONP string with obj passed to func.
+    Return a JSONP string with obj serialized and padded with func.
 
     :param dict obj: Dict to be serialized
     :param str func: Name of the callback function (default 'getData')
@@ -56,7 +59,7 @@ def build_jsonp(obj, func='getData'):
 
 def build_response(obj):
     """
-    Helper method to return a JSONP object.
+    Helper method to return a JSONP response.
 
     :param dict obj: Dict to be serialized as JSONP
     :return: Tuple of JSONP, status code, HTTP headers
@@ -73,8 +76,8 @@ def name_from_link(link):
     """
     Return the base name from a name URL.
 
-    :param str link: The outline's full public URL
-    :return: The outline's base name
+    :param str link: Outline name as a URL (i.e., as returned from newOutlineName)
+    :return: Outline base name
     :rtype: str
 
     >>> name_from_link('http://noteric.rsshub.org/')
@@ -89,8 +92,8 @@ def pack_url(name):
     """
     Return the pack URL associated with a named outline.
 
-    :param str name: Name of the outline we want the pack URL for
-    :return: Pack URL for the given name
+    :param str name: Outline name
+    :return: Pack URL for the named outline
     :rtype: str
     """
     opml_url = redis.hget('names:%s' % name, 'opmlUrl')
@@ -104,7 +107,7 @@ def handle_pack_file(name):
     """
     Parse pack file and upload files to S3.
 
-    :param str name: A name for an outline
+    :param str name: Outline name
     """
     url = pack_url(name)
     resp = requests.get(url)
@@ -216,22 +219,23 @@ def url_from_name():
 @app.route('/names/<name>')
 def display_name(name):
     """
-    Display the name record for a given name.
+    Display a name record.
 
-    In the canonical Fargo Publisher implementation, this stuff is
-    stored on S3. But because we're storing stuff in redis, have to
-    make stuff visible this way.
-
-    :param str name: Name for an outline
+    :param str name: Outline name
     """
     obj = redis.hgetall('names:%s' % name)
     if 'ctUpdates' in obj:
+        # Redis stores everything as strings, so coerce ctUpdates
+        # right before sending.
         obj['ctUpdates'] = int(obj['ctUpdates'])
     return json.dumps(obj, sort_keys=True), 200, {'Content-Type': 'application/json'}
 
 
 @app.route('/version')
 def version():
+    """
+    Display the version of the app in plain text.
+    """
     return VERSION, 200, {'Content-Type': 'text/plain'}
 
 
