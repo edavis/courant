@@ -144,7 +144,7 @@ def ping_package():
     })
 
 
-@app.route('/isnameavailable')
+@app.route('/isNameAvailable')
 def name_available():
     """
     Display whether the given name has already been taken.
@@ -163,7 +163,7 @@ def name_available():
     return build_response({'message': msg, 'available': not name_exists})
 
 
-@app.route('/newoutlinename')
+@app.route('/newOutlineName')
 def new_outline():
     """
     Associate a name with an outline.
@@ -193,7 +193,7 @@ def new_outline():
     })
 
 
-@app.route('/geturlfromname')
+@app.route('/getUrlFromName')
 def url_from_name():
     """
     Return the OPML URL associated with a given name.
