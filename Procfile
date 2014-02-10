@@ -1,1 +1,1 @@
-web: gunicorn courant:app
+web: gunicorn courant:application

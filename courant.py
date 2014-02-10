@@ -11,7 +11,7 @@ import boto
 import arrow
 import requests
 import redis as redis_pkg
-from flask import Flask, request
+from flask import Flask, request, redirect
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key
 
@@ -21,7 +21,7 @@ redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
 redis = redis_pkg.from_url(redis_url)
 
 s3_conn = boto.connect_s3()
-s3_bucket = s3_conn.lookup('blogs.rsshub.org')
+s3_bucket = s3_conn.lookup('dir.rsshub.org')
 
 VERSION = '0.1'
 PACK_MAGIC_PATTERN = '<[{~#--- '
@@ -125,7 +125,7 @@ def handle_pack_file(name):
                 paths[current_path].append(line)
 
     for path, content in paths.iteritems():
-        full_path = 'users/%s/%s' % (name, path)
+        full_path = '%s/%s' % (name, path)
         key = Key(s3_bucket, full_path)
         key.set_metadata('Content-Type', 'text/html')
         key.set_contents_from_string('\n'.join(content), policy='public-read')
@@ -141,7 +141,7 @@ def ping_package():
     handle_pack_file(name)
     obj = {
         'whenLastUpdate': build_timestamp(),
-        'urlRedirect': 'http://blogs.rsshub.org/users/%s' % name,
+        'urlRedirect': 'http://dir.rsshub.org/%s/' % name,
         'ctUpdates': redis.incr('counter:%s' % name),
     }
     redis.hmset('names:%s' % name, obj)
@@ -242,5 +242,24 @@ def version():
     return VERSION, 200, {'Content-Type': 'text/plain'}
 
 
+redirect_app = Flask(__name__)
+@redirect_app.route('/')
+def redirect_name():
+    """
+    Take a full name URL and redirect to its stored files.
+    """
+    host = request.headers.get('Host')
+    (name, domain) = host.split('.', 1)
+    url = redis.hget('names:%s' % name, 'urlRedirect')
+    return redirect(url)
+
+class Dispatch(object):
+    def __call__(self, environ, start_response):
+        active_app = app if environ['HTTP_HOST'] == 'pub.rsshub.org' else redirect_app
+        return active_app(environ, start_response)
+
+application = Dispatch()
+
 if __name__ == '__main__':
     app.run(debug=True)
+    # redirect_app.run(debug=True)
